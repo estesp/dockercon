@@ -17,7 +17,7 @@ func respond(w http.ResponseWriter, r *http.Request) {
 		log.Printf("can't retrieve hostname: %v", err)
 	}
 	fmt.Fprintf(w, "Hello from %s!\n", host)
-	fmt.Fprintf(w, "I'm a node running %s on CPU architecture %s", runtime.GOOS, runtime.GOARCH)
+	fmt.Fprintf(w, "I'm a node running %s on CPU architecture %s\n\n", runtime.GOOS, runtime.GOARCH)
 }
 
 func main() {
