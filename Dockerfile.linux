@@ -1,0 +1,4 @@
+FROM scratch
+ARG PLATFORM=linux-amd64
+COPY whoami-${PLATFORM} /whoami
+ENTRYPOINT [ "/whoami" ]

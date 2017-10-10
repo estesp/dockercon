@@ -1,0 +1,46 @@
+sudo: required
+
+services:
+ - docker
+
+script:
+  - cross.sh
+
+  # Update docker for multi-stage build
+  - sudo service docker stop
+  - curl -fsSL https://get.docker.com/ | sudo sh
+
+  # Build all images
+  - docker build --build-arg PLATFORM=linux-amd64 -t mplatform/whoami:linux-amd64 -f Dockerfile.linux .
+  - docker build --build-arg PLATFORM=linux-arm -t mplatform/whoami:linux-arm -f Dockerfile.linux .
+  - docker build --build-arg PLATFORM=linux-arm64 -t mplatform/whoami:linux-arm64 -f Dockerfile.linux .
+  - docker build --build-arg PLATFORM=linux-ppc64le -t mplatform/whoami:linux-ppc64le -f Dockerfile.linux .
+  - docker build --build-arg PLATFORM=linux-s390x -t mplatform/whoami:linux-s390x -f Dockerfile.linux .
+
+  - >
+    if [ -n "$TRAVIS_TAG" ]; then
+      # Push all images
+      travis_retry timeout 5m docker login -u="$DOCKER_USER" -p="$DOCKER_PASS"
+
+      docker tag mplatform/whoami:linux-amd64 mplatform/whoami:${TRAVIS_TAG}-linux-amd64
+      docker tag mplatform/whoami:linux-arm mplatform/whoami:${TRAVIS_TAG}-linux-arm
+      docker tag mplatform/whoami:linux-arm64 mplatform/whoami:${TRAVIS_TAG}-linux-arm64
+      docker tag mplatform/whoami:linux-ppc64le mplatform/whoami:${TRAVIS_TAG}-linux-ppc64le
+      docker tag mplatform/whoami:linux-s390x mplatform/whoami:${TRAVIS_TAG}-linux-s390x
+
+      # push version for each platform
+      docker push mplatform/whoami:${TRAVIS_TAG}-linux-amd64
+      docker push mplatform/whoami:${TRAVIS_TAG}-linux-arm
+      docker push mplatform/whoami:${TRAVIS_TAG}-linux-arm64
+      docker push mplatform/whoami:${TRAVIS_TAG}-linux-ppc64le
+      docker push mplatform/whoami:${TRAVIS_TAG}-linux-s390x
+
+      # Download manifest-tool
+      wget https://github.com/estesp/manifest-tool/releases/download/v0.7.0/manifest-tool-linux-amd64
+      mv manifest-tool-linux-amd64 manifest-tool
+      chmod +x manifest-tool
+
+      # Push manifest-list
+      ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64,linux/ppc64le,linux/s390x,windows/amd64 --template "mplatform/whoami:${TRAVIS_TAG}-OS-ARCH" --target "mplatform/whoami:$TRAVIS_TAG"
+      ./manifest-tool push from-args --platforms linux/amd64,linux/arm,linux/arm64,linux/ppc64le,linux/s390x,windows/amd64 --template "mplatform/whoami:${TRAVIS_TAG}-OS-ARCH" --target "mplatform/whoami:latest"
+    fi
