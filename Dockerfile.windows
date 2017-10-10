@@ -1,0 +1,3 @@
+FROM microsoft/nanoserver
+COPY whoami.exe whoami.exe
+ENTRYPOINT [ "whoami.exe" ]
