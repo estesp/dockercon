@@ -1,0 +1,23 @@
+image: estesp/whoami:partial
+manifests: 
+  - 
+    image: estesp/whoami:s390x
+    platform: 
+      architecture: s390x
+      os: linux
+  - 
+    image: estesp/whoami:amd64
+    platform: 
+      architecture: amd64
+      os: linux
+  - 
+    image: estesp/whoami:ppc64le
+    platform: 
+      architecture: ppc64le
+      os: linux
+  - 
+    image: estesp/whoami:arm64
+    platform: 
+      architecture: arm64
+      os: linux
+      variant: v8
